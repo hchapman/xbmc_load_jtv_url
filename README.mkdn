@@ -1,0 +1,7 @@
+Description
+=====================
+Have divingmule's Jtv XBMC plugin installed? Wanted to quickly load some user's stream by their JTV username? 
+
+Usage
+====================
+Run the script with the argument `-h`.
