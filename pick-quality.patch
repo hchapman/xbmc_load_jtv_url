@@ -1,0 +1,103 @@
+From 8c57e17701c4988c24fe5562b70018fac1e02d1f Mon Sep 17 00:00:00 2001
+From: Harrison Chapman <hchaps@gmail.com>
+Date: Mon, 6 Aug 2012 16:24:38 -0400
+Subject: [PATCH] Enable a setting to pick a desired quality, e.g., if user's
+ network is slow
+
+---
+ plugin.video.jtv.archives/default.py             |   22 ++++++++++++++++++----
+ plugin.video.jtv.archives/resources/settings.xml |   11 +++++++++--
+ 2 files changed, 27 insertions(+), 6 deletions(-)
+
+diff --git a/plugin.video.jtv.archives/default.py b/plugin.video.jtv.archives/default.py
+index 686d489..3e3176d 100644
+--- a/plugin.video.jtv.archives/default.py
++++ b/plugin.video.jtv.archives/default.py
+@@ -335,12 +335,15 @@ def getVideos(name):
+             addLink(title+' - '+part,url,desc,duration,thumb)
+ 
+ 
+-def playLive(name, play=False, password=None):
++def playLive(name, play=False, password=None, quality=None):
+         swf_url = getSwfUrl(name)
+         headers = {'User-agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:6.0) Gecko/20100101 Firefox/6.0',
+                    'Referer' : swf_url}
+-        url = 'http://usher.justin.tv/find/'+name+'.json?type=any&group=&channel_subscription='
++        if quality is None:
++            quality = getQuality()
++        url = 'http://usher.justin.tv/find/'+name+'.json?type='+quality+'&group=&channel_subscription='
+         data = json.loads(get_request(url,headers))
++
+         if data == []:
+             if debug == 'true':
+                 print '---- No Data, Live? ----'
+@@ -406,6 +409,12 @@ def getSwfUrl(channel_name):
+         response = urllib2.urlopen(req)
+         return response.geturl()
+ 
++def getQuality():
++    return ('any',
++            'live',
++            '720p',
++            '480p',
++            '360p')[int(settings.getSetting('stream_quality'))]
+ 
+ def loadPasswords():
+         passwords = {}
+@@ -638,6 +647,7 @@ catId=None
+ subCat=None
+ page=None
+ play=None
++quality=None
+ 
+ try:
+     url=urllib.unquote_plus(params["url"])
+@@ -675,6 +685,10 @@ try:
+     play=params["play"]
+ except:
+     pass
++try:
++    quality=params["quality"]
++except:
++    pass
+ 
+ print "Mode: "+str(mode)
+ print "URL: "+str(url)
+@@ -712,9 +726,9 @@ elif mode==1:
+ elif mode==2:
+     print ""
+     if play == 'True':
+-        playLive(name, True)
++        playLive(name, True, quality=quality)
+     else:
+-        playLive(name)
++        playLive(name, quality=quality)
+ 
+ elif mode==3:
+     print ""
+diff --git a/plugin.video.jtv.archives/resources/settings.xml b/plugin.video.jtv.archives/resources/settings.xml
+index 3d0ccc0..9e75d21 100644
+--- a/plugin.video.jtv.archives/resources/settings.xml
++++ b/plugin.video.jtv.archives/resources/settings.xml
+@@ -4,8 +4,15 @@
+   <setting id="lang1" type="select" label="Include Second Language" values="None|Arabic|Catalan|Chinese|ChineseTW|Croatian|Czech|Danish|Dutch|English|Finnish|French|German|Greek|Hindi|Hungarian|Indonesian|Italian|Japanese|Korean|Latvian|Lithuanian|Norwegian|Polish|Portuguese|PortugueseBrazil|Romanian|Russian|Serbian|Slovak|Spanish|Swedish|Tagalog|Turkish|Ukrainian|Vietnamese" default="None" visible="!eq(-1,None)"/>
+   <setting id="use_channel_icon" type="enum" label="Thumbnails" values="Use Channel Thumbnails|Use Screen Capture Thumbnails" default="0"/>
+   <setting id="fanart" type="bool" label="Enable Fanart" default="true"/>
+-  <setting id="view_mode" type="enum" label="Set View Mode For Channels(Confluence only)" values="Default|List|Big List|Thumbnail|Poster Wrap|Fanart|Media Info|Media Info 2" default="0" />
++  <setting id="view_mode" type="enum" label="Set View Mode For
++                                             Channels(Confluence
++                                             only)"
++           values="Default|List|Big List|Thumbnail|Poster
++                   Wrap|Fanart|Media Info|Media Info 2" default="0" />
++  <setting id="stream_quality" type="enum" label="Set default stream
++                                                  quality"
++           values="Any|Live|720p|480p|360p" default="0" />
+   <setting id="save_search" type="bool" label="Save Search Queries" default="true"/>
+   <setting id="save_passwords" type="bool" label="Save Passwords" default="true"/>
+   <setting id="debug" type="bool" label="Enable Debugging" default="false"/>
+-</settings>
+\ No newline at end of file
++</settings>
+-- 
+1.7.9.5
+

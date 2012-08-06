@@ -4,10 +4,10 @@ import argparse
 
 # http://xbmc:xbmc@mr-saturn.local:8080/jsonrpc
 
-FORMAT_360P = ".360"
-FORMAT_480P = ".480"
-FORMAT_720P = ".720"
-FORMAT_LIVE = ""
+FORMAT_360P = "360p"
+FORMAT_480P = "480p"
+FORMAT_720P = "720p"
+FORMAT_LIVE = "live"
 
 FORMAT_DICT = {'live': FORMAT_LIVE, 
                '360': FORMAT_360P,
@@ -22,8 +22,8 @@ def load_jtv_url(hostname, user, fmt, port='8080'):
     json_play = ('{"jsonrpc": "2.0",'
                  ' "method": "Player.Open",'
                  ' "params":{"item":'
-                 ' {"file" : "plugin://plugin.video.jtv.archives%s/?url=&mode=2&name=%s" }},'
-                 ' "id" : "1"}' % (fmt, user))
+                 ' {"file" : "plugin://plugin.video.jtv.archives/?url=&mode=2&name=%s&quality=%s" }},'
+                 ' "id" : "1"}' % (user, fmt))
 
     print(json_play)
 
